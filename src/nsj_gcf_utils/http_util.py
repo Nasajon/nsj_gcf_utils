@@ -2,7 +2,7 @@ import json
 import requests
 import time
 
-from app_logger import logger
+from nsj_gcf_utils.app_logger import logger
 from typing import Dict
 
 

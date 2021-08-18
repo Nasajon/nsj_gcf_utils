@@ -1,6 +1,6 @@
 import re
 
-from app_logger import logger
+from nsj_gcf_utils.app_logger import logger
 from typing import List
 
 

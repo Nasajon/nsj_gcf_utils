@@ -1,7 +1,4 @@
-import json
-
-from app_logger import logger
-from google.cloud import secretmanager_v1 as secretmanager
+from nsj_gcf_utils.app_logger import logger
 from hashlib import sha256
 
 
@@ -16,18 +13,9 @@ class AuthenticationService:
     # ]}
 
     _api_keys = list()
-    secret_client = None
 
-    @classmethod
-    def _get_client(cls):
-        if cls.secret_client is None:
-            cls.secret_client = secretmanager.SecretManagerServiceClient()
-        return cls.secret_client
-
-    def load_keys_from_secret(self, secret_uri, update=True):
-        secret_client = AuthenticationService._get_client()
-        keys = json.loads(secret_client.access_secret_version(
-            name=secret_uri).payload.data.decode('UTF-8'))["keys"]
+    def load_keys_from_secret(self, secret_keys, update=True):
+        keys = secret_keys["keys"]
         self.load_keys_from_list(keys, update)
         return self
 

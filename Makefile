@@ -1,3 +1,7 @@
+install_to_pkg:
+	pip install build
+	pip install twine
+
 build_pkg:
 	python3 -m build
 
