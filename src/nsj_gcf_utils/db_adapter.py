@@ -1,4 +1,4 @@
-import sqlalchemy
+# import sqlalchemy
 import uuid
 
 
@@ -141,51 +141,51 @@ class DBAdapter:
         return self.execute_query(sql, parameters)
 
 
-class AlchemyDBAdapter:
-    def __init__(self, db_connection):
-        self._db = db_connection
+# class AlchemyDBAdapter:
+#     def __init__(self, db_connection):
+#         self._db = db_connection
 
-    def execute_query(self, sql: str, **kwargs) -> list:
-        """
-        Executando uma instrução sql com retorno.
-        O retorno é feito em forma de uma lista (list), com elementos do tipo dict (onde cada chave é igual ao
-        nome do campo correspondente).
-        """
-        cur = None
-        sql = sqlalchemy.text(sql)
-        try:
-            cur = self._db.execute(sql, **kwargs)
-            rs = cur.fetchall()
+#     def execute_query(self, sql: str, **kwargs) -> list:
+#         """
+#         Executando uma instrução sql com retorno.
+#         O retorno é feito em forma de uma lista (list), com elementos do tipo dict (onde cada chave é igual ao
+#         nome do campo correspondente).
+#         """
+#         cur = None
+#         sql = sqlalchemy.text(sql)
+#         try:
+#             cur = self._db.execute(sql, **kwargs)
+#             rs = cur.fetchall()
 
-            return [dict(rec.items()) for rec in rs]
-        finally:
-            if cur is not None:
-                cur.close()
+#             return [dict(rec.items()) for rec in rs]
+#         finally:
+#             if cur is not None:
+#                 cur.close()
 
-    def execute(self, sql: str, **kwargs) -> int:
-        """
-        Executando uma instrução sql sem retorno.
-        É obrigatório a passagem de uma conexão de banco no argumento self._db.
+#     def execute(self, sql: str, **kwargs) -> int:
+#         """
+#         Executando uma instrução sql sem retorno.
+#         É obrigatório a passagem de uma conexão de banco no argumento self._db.
 
-        Retorna o número de linhas afetadas pela instrução.
-        """
-        cur = None
-        sql = sqlalchemy.text(sql)
-        try:
-            with self._db.begin():
-                cur = self._db.execute(sql, **kwargs)
+#         Retorna o número de linhas afetadas pela instrução.
+#         """
+#         cur = None
+#         sql = sqlalchemy.text(sql)
+#         try:
+#             with self._db.begin():
+#                 cur = self._db.execute(sql, **kwargs)
 
-            return cur.rowcount
-        finally:
-            if cur is not None:
-                cur.close()
+#             return cur.rowcount
+#         finally:
+#             if cur is not None:
+#                 cur.close()
 
-    def execute_query_from_file(self, query_file_path, **kwargs):
-        with open(query_file_path) as f:
-            sql = f.read()
-        return self.execute_query(sql, **kwargs)
+#     def execute_query_from_file(self, query_file_path, **kwargs):
+#         with open(query_file_path) as f:
+#             sql = f.read()
+#         return self.execute_query(sql, **kwargs)
 
-    def execute_from_file(self, sql_file_path, **kwargs):
-        with open(sql_file_path) as f:
-            sql = f.read()
-        return self.execute(sql, **kwargs)
+#     def execute_from_file(self, sql_file_path, **kwargs):
+#         with open(sql_file_path) as f:
+#             sql = f.read()
+#         return self.execute(sql, **kwargs)
