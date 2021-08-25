@@ -85,7 +85,7 @@ class HttpUtil:
                 f'Error posting data.\nMessage {exception_obj}')
 
     @staticmethod
-    def get_retry(url: str, headers: Dict[str, str] = None, timeout: int = 20, tries: int = 3, interval: int = 3, raise_for_status: bool = True, resouce_description: str = ''):
+    def get_retry(url: str, headers: Dict[str, str] = None, timeout: int = 20, tries: int = 3, interval: int = 3, raise_for_status: bool = True, resouce_description: str = '', data: str = None):
         logger.info(f'Get URL: {url}')
 
         # Making tries
@@ -97,7 +97,8 @@ class HttpUtil:
                 resp = requests.get(
                     url=url,
                     headers=headers,
-                    timeout=timeout
+                    timeout=timeout,
+                    data=data
                 )
 
                 if resp.status_code >= 200 and resp.status_code < 400:
