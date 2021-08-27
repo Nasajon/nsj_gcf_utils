@@ -28,7 +28,7 @@ def json_dumps(data):
             item_json = json_dumps(item)
             vector.append(item_json)
 
-        return vector
+        return '[' + ','.join(vector) + ']'
     else:
         return json_dumps(data)
 
@@ -105,3 +105,7 @@ def json_loads(str_json: str):
 
 # dicio = json_loads(texto)
 # print(dicio)
+
+# lista = [{"a": 1}, {"a": 2}]
+# print(json_dumps(lista))
+# print(type(json_dumps(lista)))
