@@ -5,6 +5,8 @@ import re
 
 
 def json_dumps(data):
+    if data == None:
+        return {}
 
     if isinstance(data, dict):
         data_copy = copy.deepcopy(data)
