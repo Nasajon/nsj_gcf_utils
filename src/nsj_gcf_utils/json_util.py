@@ -2,6 +2,7 @@ import copy
 import datetime
 import json
 import re
+import uuid
 
 
 def json_dumps(data):
@@ -18,6 +19,8 @@ def json_dumps(data):
                 value = value.strftime('%Y-%m-%dT%H:%M:%S')
             elif isinstance(value, datetime.date):
                 value = value.strftime('%Y-%m-%d')
+            elif isinstance(value, uuid.UUID):
+                value = str(value)
             else:
                 continue
 
@@ -42,9 +45,12 @@ def _loads_datetime(value):
     matcher_datetime = re.compile(
         '^(\d\d\d\d)-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d)$')
     matcher_date = re.compile('^(\d\d\d\d)-(\d\d)-(\d\d)$')
+    matcher_uuid = re.compile(
+        '^[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}$')
 
     match_datetime = matcher_datetime.search(value)
     match_date = matcher_date.search(value)
+    match_uuid = matcher_uuid.search(value)
 
     if match_datetime:
         ano = int(match_datetime.group(1))
@@ -61,6 +67,8 @@ def _loads_datetime(value):
         dia = int(match_date.group(3))
 
         return datetime.date(year=ano, month=mes, day=dia)
+    elif match_uuid:
+        return uuid.UUID(value)
     else:
         return value
 
@@ -107,7 +115,8 @@ def json_loads(str_json: str):
 
 # dicio = json_loads(texto)
 # print(dicio)
+# print(type(dicio["id"]))
 
-# lista = [{"a": 1}, {"a": 2}]
+# lista = [{"a": 1}, {"a": 2}, {"b": uuid.uuid4()}]
 # print(json_dumps(lista))
 # print(type(json_dumps(lista)))
