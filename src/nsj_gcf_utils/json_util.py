@@ -5,37 +5,34 @@ import re
 import uuid
 
 
-def json_dumps(data):
+def _convert_to_dumps(data):
     if data == None:
-        return {}
+        return None
 
-    if isinstance(data, dict):
-        data_copy = copy.deepcopy(data)
+    data_copy = copy.copy(data)
 
+    if isinstance(data_copy, datetime.datetime):
+        return data_copy.strftime('%Y-%m-%dT%H:%M:%S')
+    elif isinstance(data_copy, datetime.date):
+        return data_copy.strftime('%Y-%m-%d')
+    elif isinstance(data_copy, uuid.UUID):
+        return str(data_copy)
+    elif isinstance(data_copy, dict):
         for key in data_copy.keys():
-            value = data_copy[key]
+            data_copy[key] = _convert_to_dumps(data_copy[key])
+        return data_copy
+    elif isinstance(data_copy, list):
+        for idx in range(0, len(data_copy)):
+            data_copy[idx] = _convert_to_dumps(data_copy[idx])
 
-            if isinstance(value, datetime.datetime):
-                value = value.strftime('%Y-%m-%dT%H:%M:%S')
-            elif isinstance(value, datetime.date):
-                value = value.strftime('%Y-%m-%d')
-            elif isinstance(value, uuid.UUID):
-                value = str(value)
-            else:
-                continue
-
-            data_copy[key] = value
-
-        return json.dumps(data_copy)
-    elif isinstance(data, list):
-        vector = []
-        for item in data:
-            item_json = json_dumps(item)
-            vector.append(item_json)
-
-        return '[' + ','.join(vector) + ']'
+        return data_copy
     else:
-        return json_dumps(data)
+        return data_copy
+
+
+def json_dumps(data):
+    data_copy = _convert_to_dumps(data)
+    return json.dumps(data_copy)
 
 
 def _loads_datetime(value):
@@ -117,6 +114,7 @@ def json_loads(str_json: str):
 # print(dicio)
 # print(type(dicio["id"]))
 
-# lista = [{"a": 1}, {"a": 2}, {"b": uuid.uuid4()}]
+# lista = [{"a": 1}, {"a": 2}, {
+#     "c": {"b": uuid.uuid4(), "data_hora": datetime.datetime.today(), "so_data": datetime.datetime.today().date()}}]
 # print(json_dumps(lista))
 # print(type(json_dumps(lista)))
