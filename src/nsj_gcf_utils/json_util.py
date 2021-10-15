@@ -3,6 +3,7 @@ import datetime
 import json
 import re
 import uuid
+import decimal
 
 
 def _convert_to_dumps(data):
@@ -17,6 +18,8 @@ def _convert_to_dumps(data):
         return data_copy.strftime('%Y-%m-%d')
     elif isinstance(data_copy, uuid.UUID):
         return str(data_copy)
+    elif isinstance(data_copy, decimal.Decimal):
+        return float(data_copy)
     elif isinstance(data_copy, dict):
         for key in data_copy.keys():
             data_copy[key] = _convert_to_dumps(data_copy[key])
