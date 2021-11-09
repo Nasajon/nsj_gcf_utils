@@ -8,7 +8,24 @@ class DBAdapter:
 
     def __init__(self, db_connection):
         self._db = db_connection
-        self._is_open = True
+        self._transaction = None
+
+    def begin(self):
+        if self._transaction is None:
+            self._transaction = self._db.begin()
+
+    def commit(self):
+        if self._transaction is not None:
+            self._transaction.commit()
+            self._transaction = None
+
+    def rollback(self):
+        if self._transaction is not None:
+            self._transaction.rollback()
+            self._transaction = None
+
+    def in_transaction(self):
+        return self._transaction is not None
 
     def execute(self, sql: str, parameters=None) -> int:
         """
@@ -128,12 +145,24 @@ class DBAdapter:
             return parameter
 
     def _execute(self, sql: str, parameters: list):
-        with self._db.begin():
+        new_transaction = not self.in_transaction()
+
+        try:
+            if new_transaction:
+                self.begin()
+
             if (parameters != None):
                 pars = [self._check_type(par) for par in parameters]
                 return self._db.execute(sql, pars)
             else:
                 return self._db.execute(sql)
+        except:
+            if new_transaction:
+                self.rollback()
+            raise
+        finally:
+            if new_transaction:
+                self.commit()
 
     def execute_query_from_file(self, query_file_path, *parameters):
         with open(query_file_path) as f:
