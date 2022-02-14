@@ -26,7 +26,7 @@ class ResourceNotFound(Exception):
 
 class HttpUtil:
     @staticmethod
-    def post_retry(url: str, data: str, headers: Dict[str, str] = None, timeout: int = 20, tries: int = 3, interval: int = 3, format_data: bool = True, raise_for_status: bool = True, resouce_description: str = ''):
+    def post_retry(url: str, data: str, headers: Dict[str, str] = None, timeout: int = 20, tries: int = 3, interval: int = 3, format_data: bool = True, raise_for_status: bool = True, resouce_description: str = '', verify :bool = True):
         # Formatting data
         if format_data:
             if isinstance(data, dict) or isinstance(data, list):
@@ -58,7 +58,8 @@ class HttpUtil:
                     url=url,
                     data=data,
                     headers=headers,
-                    timeout=timeout
+                    timeout=timeout,
+                    verify=verify
                 )
 
                 if resp.status_code >= 200 and resp.status_code < 400:
@@ -91,7 +92,7 @@ class HttpUtil:
                 f'Error posting data.\nMessage {exception_obj}')
 
     @staticmethod
-    def get_retry(url: str, headers: Dict[str, str] = None, timeout: int = 20, tries: int = 3, interval: int = 3, raise_for_status: bool = True, resouce_description: str = '', data: str = None):
+    def get_retry(url: str, headers: Dict[str, str] = None, timeout: int = 20, tries: int = 3, interval: int = 3, raise_for_status: bool = True, resouce_description: str = '', data: str = None, verify :bool = True):
         logger.info(f'Get URL: {url}')
 
         # Making tries
@@ -104,7 +105,8 @@ class HttpUtil:
                     url=url,
                     headers=headers,
                     timeout=timeout,
-                    data=data
+                    data=data,
+                    verify=verify
                 )
 
                 if resp.status_code >= 200 and resp.status_code < 400:
@@ -139,7 +141,7 @@ class HttpUtil:
     @staticmethod
     def put_retry(url: str, data: str, headers: Dict[str, str] = None, timeout: int = 20, tries: int = 3,
                    interval: int = 3, format_data: bool = True, raise_for_status: bool = True,
-                   resouce_description: str = ''):
+                   resouce_description: str = '', verify :bool = True):
         # Formatting data
         if format_data:
             if isinstance(data, dict) or isinstance(data, list):
@@ -171,7 +173,8 @@ class HttpUtil:
                     url=url,
                     data=data,
                     headers=headers,
-                    timeout=timeout
+                    timeout=timeout,
+                    verify=verify
                 )
 
                 if resp.status_code >= 200 and resp.status_code < 400:
@@ -204,7 +207,7 @@ class HttpUtil:
     @staticmethod
     def delete_retry(url: str, headers: Dict[str, str] = None, timeout: int = 20, tries: int = 3,
                    interval: int = 3, format_data: bool = True, raise_for_status: bool = True,
-                   resouce_description: str = ''):
+                   resouce_description: str = '', verify :bool = True):
 
 
 
@@ -217,7 +220,8 @@ class HttpUtil:
                 resp = requests.delete(
                     url=url,
                     headers=headers,
-                    timeout=timeout
+                    timeout=timeout,
+                    verify=verify
                 )
 
                 if resp.status_code >= 200 and resp.status_code < 400:
