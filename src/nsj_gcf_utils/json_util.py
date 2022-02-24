@@ -33,9 +33,9 @@ def _convert_to_dumps(data):
         return data_copy
 
 
-def json_dumps(data):
+def json_dumps(data, ensure_ascii=False):
     data_copy = _convert_to_dumps(data)
-    return json.dumps(data_copy)
+    return json.dumps(data_copy,ensure_ascii=ensure_ascii)
 
 
 def _loads_datetime(value):
