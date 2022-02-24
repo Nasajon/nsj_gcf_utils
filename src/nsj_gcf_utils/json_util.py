@@ -33,7 +33,7 @@ def _convert_to_dumps(data):
         return data_copy
 
 
-def json_dumps(data, ensure_ascii=False):
+def json_dumps(data, ensure_ascii=True):
     data_copy = _convert_to_dumps(data)
     return json.dumps(data_copy,ensure_ascii=ensure_ascii)
 
