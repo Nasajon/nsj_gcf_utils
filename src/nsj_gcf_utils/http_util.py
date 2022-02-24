@@ -1,9 +1,11 @@
 import json
+import urllib
+
 import requests
 import time
 
 from nsj_gcf_utils.app_logger import logger
-from typing import Dict
+from typing import Dict, Any
 
 
 class HttpUtilGetException(Exception):
