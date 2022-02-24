@@ -26,7 +26,18 @@ class ResourceNotFound(Exception):
 
 class HttpUtil:
     @staticmethod
-    def post_retry(url: str, data: str, headers: Dict[str, str] = None, timeout: int = 20, tries: int = 3, interval: int = 3, format_data: bool = True, raise_for_status: bool = True, resouce_description: str = '', verify :bool = True):
+    def post_retry(url: str, data: str, headers: Dict[str, str] = None, timeout: int = 20, tries: int = 3, interval: int = 3, format_data: bool = True, raise_for_status: bool = True, resouce_description: str = '', verify :bool = True, query_params: Dict[str, Any] = None):
+        # Encoding query params
+        if query_params is not None:
+            q_params = urllib.parse.urlencode(query_params, doseq=True)
+
+            if '?' in url:
+                url += '&' + q_params
+            else:
+                url += '?' + q_params
+                
+        logger.info(f'Post URL: {url}')
+        
         # Formatting data
         if format_data:
             if isinstance(data, dict) or isinstance(data, list):
@@ -92,7 +103,18 @@ class HttpUtil:
                 f'Error posting data.\nMessage {exception_obj}')
 
     @staticmethod
-    def get_retry(url: str, headers: Dict[str, str] = None, timeout: int = 20, tries: int = 3, interval: int = 3, raise_for_status: bool = True, resouce_description: str = '', data: str = None, verify :bool = True):
+    def get_retry(url: str, headers: Dict[str, str] = None, timeout: int = 20, tries: int = 3, interval: int = 3, raise_for_status: bool = True, resouce_description: str = '', data: str = None, verify :bool = True, query_params: Dict[str, Any] = None):
+        logger.info(f'Get URL: {url}')
+        
+        # Encoding query params
+        if query_params is not None:
+            q_params = urllib.parse.urlencode(query_params, doseq=True)
+
+            if '?' in url:
+                url += '&' + q_params
+            else:
+                url += '?' + q_params
+                
         logger.info(f'Get URL: {url}')
 
         # Making tries
