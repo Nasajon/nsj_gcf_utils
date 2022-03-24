@@ -14,3 +14,9 @@ Segue breve descrição das features disponiveis, identificando os respectivos m
 * ```nsj_gcf_utils.keycloak_service```: Autenticação para aplicação enquanto cliente Oauth.
 * ```nsj_gcf_utils.nsj_authentication_service```: Validação de access_token recebido no cabeçalho Authorization (Bearer token), por meio do padrão Token Instrospection (RFC 7662).
 * ```nsj_gcf_utils.router```: Utilitário para controler de rotas por meio decorators, fazendo com que uma fucntion-framework se comporte de modo similar a outros frameworks web como Spring ou Symfony.
+
+## Testes Automatizados
+
+Sempre rode o comando abaixo, antes de dar push neste repositório:
+
+> make tests

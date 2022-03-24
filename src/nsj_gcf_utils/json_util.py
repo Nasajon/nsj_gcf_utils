@@ -5,6 +5,8 @@ import re
 import uuid
 import decimal
 
+# JSON DUMPS
+
 
 def _convert_to_dumps(data):
     if data == None:
@@ -29,16 +31,45 @@ def _convert_to_dumps(data):
             data_copy[idx] = _convert_to_dumps(data_copy[idx])
 
         return data_copy
+    elif isinstance(data_copy, str) or isinstance(data_copy, int) or isinstance(data_copy, float) or isinstance(data_copy, bool):
+        return data_copy
+    elif isinstance(data_copy, object):
+        to_dict_method = getattr(data_copy, 'to_dict', None)
+        if to_dict_method is not None and callable(to_dict_method):
+            dict_attrs = data_copy.to_dict()
+        else:
+            attrs_fields = [k for k in data_copy.__dict__ if not callable(
+                getattr(data_copy, k, None))]
+            dict_attrs = {k: data_copy.__dict__[k] for k in attrs_fields}
+
+        return _convert_to_dumps(dict_attrs)
     else:
         return data_copy
 
 
 def json_dumps(data, ensure_ascii=True):
+    """
+    Retorna a representação em json (string) do objeto recebido no parâmetro "data".
+
+    É importante destacar que este método está preparado para as seguintes transformações:
+    - datetime.datetime => '%Y-%m-%dT%H:%M:%S'
+    - datetime.date => '%Y-%m-%d'
+    - uuid.UUID => str(uuid.UUID)
+    - Decimal => float
+
+    Além disso, objetos (que não sejam de tipos primitivos, como str, float e bool), são
+    tratados como dicionários, tendo todos os seus atributos considerados como chaves do json.
+
+    Adicionalmente, se um objeto implementar um método "to_dict", a representação, em dicionário,
+    desse objeto será obtida por meio da invocação deste método, antes da transformação do mesmo
+    em json (permitindo customizar o modo como um objeto é serializado em json).
+    """
     data_copy = _convert_to_dumps(data)
-    return json.dumps(data_copy,ensure_ascii=ensure_ascii)
+    return json.dumps(data_copy, ensure_ascii=ensure_ascii)
 
 
-def _loads_datetime(value):
+# JSON LOADS
+def _loads_datetime_uuid(value):
     if not isinstance(value, str):
         return value
 
@@ -86,38 +117,42 @@ def _internal_loads(data):
         return vector
 
     else:
-        return _loads_datetime(data)
+        return _loads_datetime_uuid(data)
 
 
-def json_loads(str_json: str):
+def _loads_to_class(load_data, model_class=None):
+    if isinstance(load_data, list):
+        return [_loads_to_class(item, model_class) for item in load_data]
+    elif isinstance(load_data, dict):
+        obj = model_class()
+        for k in load_data:
+            if hasattr(obj, k):
+                setattr(obj, k, load_data[k])
+        return obj
+    else:
+        return model_class()
+
+
+def json_loads(str_json: str, model_class=None):
+    """
+    Interpreta a string json recebida no parâmetro "str_json", retornando:
+    - Um dicionário ou uma lista de dicionários (se o parâmetro "model_class" for nulo)
+    - Um objeto do tipo model_class, ou uma lista desses objetos, atribuido o valor
+    das chaves correspondentes no json, para cada atributo com mesmo nome, no objeto.
+
+    É importante destacar que este método está preparado para as seguintes transformações:
+    - '%Y-%m-%dT%H:%M:%S' => datetime.datetime
+    - '%Y-%m-%d' => datetime.date
+    """
+
     if isinstance(str_json, str):
         data = json.loads(str_json)
     else:
         data = str_json
 
-    return _internal_loads(data)
+    load_data = _internal_loads(data)
 
-
-# texto = """{
-#     "id": "74dd6e30-8d62-4a9c-bb8b-78c9b7bd7006",
-#     "pubsub_message_id": "2428659124732084",
-#     "tenant": "nasajon",
-#     "rpa_id": "BUG",
-#     "received_data": {
-#         "outro": "dado"
-#     },
-#     "status": 200,
-#     "return": {
-#         "file_url": "http://www.google.com.br"
-#     },
-#     "created_at": "2021-06-14T23:28:00"
-# }"""
-
-# dicio = json_loads(texto)
-# print(dicio)
-# print(type(dicio["id"]))
-
-# lista = [{"a": 1}, {"a": 2}, {
-#     "c": {"b": uuid.uuid4(), "data_hora": datetime.datetime.today(), "so_data": datetime.datetime.today().date()}}]
-# print(json_dumps(lista))
-# print(type(json_dumps(lista)))
+    if model_class is None or (not isinstance(load_data, dict) and not isinstance(load_data, list)):
+        return load_data
+    else:
+        return _loads_to_class(load_data, model_class)

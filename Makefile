@@ -7,3 +7,6 @@ build_pkg:
 
 upload_pkg:
 	python3 -m twine upload --skip-existing dist/*
+
+tests:
+	python -m unittest
