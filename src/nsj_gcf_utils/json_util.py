@@ -8,7 +8,7 @@ import decimal
 # JSON DUMPS
 
 
-def _convert_to_dumps(data):
+def convert_to_dumps(data):
     if data == None:
         return None
 
@@ -24,11 +24,11 @@ def _convert_to_dumps(data):
         return float(data_copy)
     elif isinstance(data_copy, dict):
         for key in data_copy.keys():
-            data_copy[key] = _convert_to_dumps(data_copy[key])
+            data_copy[key] = convert_to_dumps(data_copy[key])
         return data_copy
     elif isinstance(data_copy, list):
         for idx in range(0, len(data_copy)):
-            data_copy[idx] = _convert_to_dumps(data_copy[idx])
+            data_copy[idx] = convert_to_dumps(data_copy[idx])
 
         return data_copy
     elif isinstance(data_copy, str) or isinstance(data_copy, int) or isinstance(data_copy, float) or isinstance(data_copy, bool):
@@ -42,12 +42,12 @@ def _convert_to_dumps(data):
                 getattr(data_copy, k, None))]
             dict_attrs = {k: data_copy.__dict__[k] for k in attrs_fields}
 
-        return _convert_to_dumps(dict_attrs)
+        return convert_to_dumps(dict_attrs)
     else:
         return data_copy
 
 
-def json_dumps(data, ensure_ascii=True):
+def json_dumps(data, ensure_ascii=True, convert_before_dump=True):
     """
     Retorna a representação em json (string) do objeto recebido no parâmetro "data".
 
@@ -64,7 +64,11 @@ def json_dumps(data, ensure_ascii=True):
     desse objeto será obtida por meio da invocação deste método, antes da transformação do mesmo
     em json (permitindo customizar o modo como um objeto é serializado em json).
     """
-    data_copy = _convert_to_dumps(data)
+    if convert_before_dump:
+        data_copy = convert_to_dumps(data)
+    else:
+        data_copy = data
+
     return json.dumps(data_copy, ensure_ascii=ensure_ascii)
 
 
