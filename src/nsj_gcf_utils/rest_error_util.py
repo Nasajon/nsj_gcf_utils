@@ -1,5 +1,6 @@
 from nsj_gcf_utils  .exception import ERPException
-
+from nsj_gcf_utils.json_util import json_dumps, json_loads
+from pydantic import ValidationError
 from typing import Dict, List, Union, Tuple
 
 
@@ -45,6 +46,17 @@ def _format_unknow_error():
     }
 
 
+def _format_pydantic_validation_error(error: ValidationError):
+    result = []
+    errors = json_loads(error.json())
+    for e in errors:
+        msg = f"Erro de validando campo '{e['loc'][0]}' de entrada. Mensagem do erro: {e['msg']}."
+        e_tuple = (None, msg)
+        result.append(_format_tuple_error(e_tuple))
+
+    return result
+
+
 def format_error_body(
     error: Union[
         Tuple[str, str],
@@ -54,7 +66,8 @@ def format_error_body(
         str,
         Exception,
         List[str],
-        List[Exception]
+        List[Exception],
+        ValidationError
     ]
 ) -> List[Dict[str, str]]:
 
@@ -67,8 +80,26 @@ def format_error_body(
     elif isinstance(error, str):
         error = (None, error)
         return [_format_tuple_error(error)]
+    elif isinstance(error, ValidationError):
+        return _format_pydantic_validation_error(error)
     elif isinstance(error, Exception):
         error = (None, f'{error}')
         return [_format_tuple_error(error)]
     else:
         return [_format_unknow_error()]
+
+
+def format_json_error(
+    error: Union[
+        Tuple[str, str],
+        List[Tuple[str, str]],
+        ERPException,
+        List[ERPException],
+        str,
+        Exception,
+        List[str],
+        List[Exception],
+        ValidationError
+    ]
+) -> List[Dict[str, str]]:
+    return json_dumps(format_error_body(error))
