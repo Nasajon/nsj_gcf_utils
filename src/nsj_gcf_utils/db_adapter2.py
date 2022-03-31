@@ -37,7 +37,10 @@ class DBAdapter2:
         try:
             cur = self._execute(sql, **kwargs)
 
-            return cur.rowcount
+            rs = cur.fetchall()
+            returning = [dict(rec.items()) for rec in rs]
+
+            return (cur.rowcount, returning)
         finally:
             if cur is not None:
                 cur.close()

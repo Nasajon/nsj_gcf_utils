@@ -1,7 +1,10 @@
 def _convert_to(obj: object, new_dto_class):
     new_obj = new_dto_class()
 
-    for attribute in obj.__dict__:
+    for attribute in new_obj.__dict__:
+        if not hasattr(obj, attribute):
+            continue
+
         attr_origem = getattr(obj, attribute, None)
         attr_destino = getattr(new_obj, attribute, None)
 
