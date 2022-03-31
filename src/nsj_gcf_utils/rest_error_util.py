@@ -1,6 +1,6 @@
-from nsj_gcf_utils.exception import ERPException
+from nsj_gcf_utils  .exception import ERPException
 
-from typing import List, Union, Tuple
+from typing import Dict, List, Union, Tuple
 
 
 def _format_tuple_error(error: Tuple[str, str]):
@@ -24,6 +24,12 @@ def _format_list_error(error: Union[List[Tuple[str, str]], List[ERPException]]):
             formated = _format_tuple_error(e)
         elif isinstance(e, ERPException):
             formated = _format_erpexception_error(e)
+        elif isinstance(e, str):
+            e = (None, e)
+            formated = _format_tuple_error(e)
+        elif isinstance(e, Exception):
+            e = (None, f'{e}')
+            formated = _format_tuple_error(e)
         else:
             formated = _format_unknow_error()
 
@@ -39,12 +45,30 @@ def _format_unknow_error():
     }
 
 
-def format_error_body(error: Union[Tuple[str, str], List[Tuple[str, str]], ERPException, List[ERPException]]):
+def format_error_body(
+    error: Union[
+        Tuple[str, str],
+        List[Tuple[str, str]],
+        ERPException,
+        List[ERPException],
+        str,
+        Exception,
+        List[str],
+        List[Exception]
+    ]
+) -> List[Dict[str, str]]:
+
     if isinstance(error, tuple):
         return [_format_tuple_error(error)]
     elif isinstance(error, list):
         return _format_list_error(error)
     elif isinstance(error, ERPException):
         return [_format_erpexception_error(error)]
+    elif isinstance(error, str):
+        error = (None, error)
+        return [_format_tuple_error(error)]
+    elif isinstance(error, Exception):
+        error = (None, f'{error}')
+        return [_format_tuple_error(error)]
     else:
         return [_format_unknow_error()]

@@ -1,13 +1,8 @@
 import urllib.parse
 import uuid
 
+from nsj_gcf_utils.exception import PaginationException
 from typing import Any, List
-
-
-class PaginationException(Exception):
-    def __init__(self, msg: str):
-        super().__init__(
-            f'Erro nos parâmetros requisitados para paginação: {msg}')
 
 
 def page_body(
