@@ -28,19 +28,24 @@ class DBAdapter2:
 
     def execute(self, sql: str, **kwargs) -> int:
         """
-        Executando uma instrução sql sem retorno.
+        Executando uma instrução sql, com ou sem retorno.
         É obrigatório a passagem de uma conexão de banco no argumento self._db.
 
-        Retorna o número de linhas afetadas pela instrução.
+        Retorna o número de linhas afetadas pela instrução e o retorno esperado se houver, como uma tupla.
+        O retorno é feito em forma de uma lista (list), com elementos do tipo dict (onde cada chave é igual ao
+        nome do campo correspondente).
         """
         cur = None
         try:
             cur = self._execute(sql, **kwargs)
 
-            rs = cur.fetchall()
-            returning = [dict(rec.items()) for rec in rs]
+            try:
+                rs = cur.fetchall()
+                returning = [dict(rec.items()) for rec in rs]
 
-            return (cur.rowcount, returning)
+                return (cur.rowcount, returning)
+            except:
+                return (cur.rowcount, None)
         finally:
             if cur is not None:
                 cur.close()
