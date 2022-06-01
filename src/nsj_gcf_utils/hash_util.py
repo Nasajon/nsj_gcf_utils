@@ -1,8 +1,8 @@
 from hashlib import sha256
 from nsj_gcf_utils.json_util import json_dumps
 
-"""Cria um hash usando SHA256 para ser usado para autenticação pelo webhook.
-   Ele recebe a url, o body e o método da requisição junto com uma chave especial.
+"""Cria um hash usando SHA256 para ser usado para autenticaÃ§Ã£o pelo webhook.
+   Ele recebe a url, o body e o metodo da requisiÃ§Ã£o junto com uma chave especial.
    Depois junta todos os dados e usa SHA256 para criar o hash.
 """
 def hash_webhook(url, body, method, key):
