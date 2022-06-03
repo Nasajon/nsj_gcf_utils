@@ -10,7 +10,9 @@ def hash_webhook(url, body, method, key):
     if isinstance(body, dict):
         body = json_dumps(body)
 
-    hash: str = url + body + method + key # tipagem para ajudar o autocomplete de IDEs
+    # tipagem para ajudar o autocomplete de IDEs
+    # str na key caso ela seja um número ou um uuid
+    hash: str = url + body + method + str(key) 
 
     return sha256(hash.encode()).hexdigest()
 
