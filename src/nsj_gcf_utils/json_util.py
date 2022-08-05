@@ -21,7 +21,7 @@ def convert_to_dumps(data):
     elif isinstance(data_copy, uuid.UUID):
         return str(data_copy)
     elif isinstance(data_copy, decimal.Decimal):
-        return float(data_copy)
+        return str(data_copy)
     elif isinstance(data_copy, dict):
         for key in data_copy.keys():
             data_copy[key] = convert_to_dumps(data_copy[key])
