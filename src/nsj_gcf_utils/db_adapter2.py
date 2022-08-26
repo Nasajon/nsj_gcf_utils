@@ -39,13 +39,13 @@ class DBAdapter2:
         try:
             cur = self._execute(sql, **kwargs)
 
-            try:
+            if 'returning' in sql.lower():
                 rs = cur.fetchall()
                 returning = [dict(rec.items()) for rec in rs]
+            else:
+                returning = None
 
-                return (cur.rowcount, returning)
-            except:
-                return (cur.rowcount, None)
+            return (cur.rowcount, returning)
         finally:
             if cur is not None:
                 cur.close()
