@@ -1,11 +1,16 @@
 import copy
 import datetime
+import decimal
+import enum
 import json
 import re
 import uuid
-import decimal
 
 # JSON DUMPS
+
+
+class JsonLoadException(Exception):
+    pass
 
 
 def convert_to_dumps(data):
@@ -31,6 +36,8 @@ def convert_to_dumps(data):
             data_copy[idx] = convert_to_dumps(data_copy[idx])
 
         return data_copy
+    elif isinstance(data_copy.__class__, enum.EnumMeta):
+        return data_copy.value
     elif isinstance(data_copy, str) or isinstance(data_copy, int) or isinstance(data_copy, float) or isinstance(data_copy, bool):
         return data_copy
     elif isinstance(data_copy, object):
@@ -148,15 +155,21 @@ def json_loads(str_json: str, model_class=None):
     - '%Y-%m-%dT%H:%M:%S' => datetime.datetime
     - '%Y-%m-%d' => datetime.date
     """
+    try:
+        if isinstance(str_json, str):
+            data = json.loads(str_json)
+        else:
+            data = str_json
 
-    if isinstance(str_json, str):
-        data = json.loads(str_json)
-    else:
-        data = str_json
+        load_data = _internal_loads(data)
 
-    load_data = _internal_loads(data)
+        if model_class is None or (not isinstance(load_data, dict) and not isinstance(load_data, list)):
+            return load_data
+        else:
+            return _loads_to_class(load_data, model_class)
+    except Exception as e:
+        msg = f"Erro interpretando json. Mensagem original do erro: {e}."
+        msg += '\nCorpo do json recebido:\n'
+        msg += f"{str_json}"
 
-    if model_class is None or (not isinstance(load_data, dict) and not isinstance(load_data, list)):
-        return load_data
-    else:
-        return _loads_to_class(load_data, model_class)
+        raise JsonLoadException(msg)
