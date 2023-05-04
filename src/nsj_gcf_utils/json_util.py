@@ -23,6 +23,8 @@ def convert_to_dumps(data):
         return data_copy.strftime('%Y-%m-%dT%H:%M:%S')
     elif isinstance(data_copy, datetime.date):
         return data_copy.strftime('%Y-%m-%d')
+    elif isinstance(data_copy, datetime.time):
+        return data_copy.strftime('%H:%M:%S')
     elif isinstance(data_copy, uuid.UUID):
         return str(data_copy)
     elif isinstance(data_copy, decimal.Decimal):
@@ -89,10 +91,14 @@ def _loads_datetime_uuid(value):
     matcher_date = re.compile('^(\d\d\d\d)-(\d\d)-(\d\d)$')
     matcher_uuid = re.compile(
         '^[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}$')
-
+    matcher_time = re.compile(
+        '^(\d\d):(\d\d):(\d\d)$'
+    )
+    
     match_datetime = matcher_datetime.search(value)
     match_date = matcher_date.search(value)
     match_uuid = matcher_uuid.search(value)
+    match_time = matcher_time.search(value)
 
     if match_datetime:
         ano = int(match_datetime.group(1))
@@ -109,6 +115,11 @@ def _loads_datetime_uuid(value):
         dia = int(match_date.group(3))
 
         return datetime.date(year=ano, month=mes, day=dia)
+    elif match_time:
+        hora = int(match_time.group(1))
+        minuto = int(match_time.group(2))
+        segundo = int(match_time.group(3))
+        return datetime.time(hour=hora, minute=minuto, second=segundo)
     elif match_uuid:
         return uuid.UUID(value)
     else:
