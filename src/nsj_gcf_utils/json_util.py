@@ -44,7 +44,7 @@ def convert_to_dumps(data):
         if isinstance(data_copy.value, tuple):
             lista_valores = list(data_copy.value)
             for v in lista_valores:
-                if isinstance(v, "str"):
+                if isinstance(v, str):
                     return v
                 
         return data_copy.value
