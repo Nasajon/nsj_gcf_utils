@@ -39,6 +39,14 @@ def convert_to_dumps(data):
 
         return data_copy
     elif isinstance(data_copy.__class__, enum.EnumMeta):
+        # Se o type do valor do enumerado for um tupla,
+        # procura o primeiro valor do tipo str, na tupla
+        if isinstance(data_copy.value, tuple):
+            lista_valores = list(data_copy.value)
+            for v in lista_valores:
+                if isinstance(v, "str"):
+                    return v
+                
         return data_copy.value
     elif isinstance(data_copy, str) or isinstance(data_copy, int) or isinstance(data_copy, float) or isinstance(data_copy, bool):
         return data_copy
