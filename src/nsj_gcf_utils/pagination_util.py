@@ -22,14 +22,14 @@ def page_body(
             result=result,
             id_field=id_field
         )
-    elif current_after is None and current_before is not None:
-        return _page_body_before(
-            base_url=base_url,
-            limit=limit,
-            current_before=current_before,
-            result=result,
-            id_field=id_field
-        )
+    # elif current_after is None and current_before is not None:
+    #     return _page_body_before(
+    #         base_url=base_url,
+    #         limit=limit,
+    #         current_before=current_before,
+    #         result=result,
+    #         id_field=id_field
+    #     )
     elif current_after is not None and current_before is not None:
         raise PaginationException(
             'Não é permitido usar os parâmetros "after" (ou "offset") e "before" simultâneamente.')
@@ -60,7 +60,7 @@ def page_body(
     # Returning pagination body
     return {
         'next': url_next,
-        'prev': url_previous,
+        # 'prev': url_previous,
         'result': result[0:limit]
     }
 
@@ -107,7 +107,7 @@ def _page_body_after(
     # Returning pagination body
     return {
         'next': url_next,
-        'prev': url_previous,
+        # 'prev': url_previous,
         'result': result[0:limit]
     }
 
