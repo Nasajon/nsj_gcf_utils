@@ -17,4 +17,5 @@ upload_pkg:
 
 tests: env_setup
 	python3 -m unittest discover -s ./tests -p "*_test.py"
-	
+
+publish_pkg: build_pkg upload_pkg

@@ -5,6 +5,7 @@ import enum
 import json
 import re
 import uuid
+import base64
 
 # JSON DUMPS
 
@@ -20,15 +21,17 @@ def convert_to_dumps(data):
     data_copy = copy.copy(data)
 
     if isinstance(data_copy, datetime.datetime):
-        return data_copy.strftime('%Y-%m-%dT%H:%M:%S')
+        return data_copy.strftime('%04Y-%m-%dT%H:%M:%S')
     elif isinstance(data_copy, datetime.date):
-        return data_copy.strftime('%Y-%m-%d')
+        return data_copy.strftime('%04Y-%m-%d')
     elif isinstance(data_copy, datetime.time):
         return data_copy.strftime('%H:%M:%S')
     elif isinstance(data_copy, uuid.UUID):
         return str(data_copy)
     elif isinstance(data_copy, decimal.Decimal):
         return str(data_copy)
+    elif isinstance(data_copy, bytes):
+        return base64.b64encode(data_copy).decode('utf-8')
     elif isinstance(data_copy, dict):
         for key in data_copy.keys():
             data_copy[key] = convert_to_dumps(data_copy[key])
@@ -46,7 +49,7 @@ def convert_to_dumps(data):
             for v in lista_valores:
                 if isinstance(v, str):
                     return v
-                
+
         return data_copy.value
     elif isinstance(data_copy, str) or isinstance(data_copy, int) or isinstance(data_copy, float) or isinstance(data_copy, bool):
         return data_copy
@@ -102,7 +105,7 @@ def _loads_datetime_uuid(value):
     matcher_time = re.compile(
         '^(\d\d):(\d\d):(\d\d)$'
     )
-    
+
     match_datetime = matcher_datetime.search(value)
     match_date = matcher_date.search(value)
     match_uuid = matcher_uuid.search(value)
