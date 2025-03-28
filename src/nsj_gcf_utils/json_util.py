@@ -60,6 +60,8 @@ def convert_to_dumps(data):
         return data_copy.value
     elif isinstance(data_copy, str) or isinstance(data_copy, int) or isinstance(data_copy, float) or isinstance(data_copy, bool):
         return data_copy
+    elif isinstance(data_copy, bytes):
+        return data_copy
     elif isinstance(data_copy, object):
         to_dict_method = getattr(data_copy, 'to_dict', None)
         if to_dict_method is not None and callable(to_dict_method):
