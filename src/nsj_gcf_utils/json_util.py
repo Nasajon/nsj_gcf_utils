@@ -1,3 +1,4 @@
+import os
 import copy
 import datetime
 import decimal
@@ -21,9 +22,15 @@ def convert_to_dumps(data):
     data_copy = copy.copy(data)
 
     if isinstance(data_copy, datetime.datetime):
-        return data_copy.strftime('%04Y-%m-%dT%H:%M:%S')
+        if os.name == 'nt':
+            return data_copy.strftime('%Y-%m-%dT%H:%M:%S')
+        else:
+            return data_copy.strftime('%04Y-%m-%dT%H:%M:%S')
     elif isinstance(data_copy, datetime.date):
-        return data_copy.strftime('%04Y-%m-%d')
+        if os.name == 'nt':
+            return data_copy.strftime('%Y-%m-%d')
+        else:
+            return data_copy.strftime('%04Y-%m-%d')
     elif isinstance(data_copy, datetime.time):
         return data_copy.strftime('%H:%M:%S')
     elif isinstance(data_copy, uuid.UUID):
