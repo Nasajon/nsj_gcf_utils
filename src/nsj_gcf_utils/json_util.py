@@ -15,7 +15,7 @@ class JsonLoadException(Exception):
     pass
 
 
-def convert_to_dumps(data):
+def convert_to_dumps(data, encode=False):
     if data == None:
         return None
 
@@ -38,7 +38,7 @@ def convert_to_dumps(data):
     elif isinstance(data_copy, decimal.Decimal):
         return str(data_copy)
     elif isinstance(data_copy, bytes):
-        return base64.b64encode(data_copy).decode('utf-8')
+        return base64.b64encode(data_copy).decode('utf-8') if encode else data_copy
     elif isinstance(data_copy, dict):
         for key in data_copy.keys():
             data_copy[key] = convert_to_dumps(data_copy[key])
