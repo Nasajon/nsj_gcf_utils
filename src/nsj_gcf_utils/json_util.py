@@ -46,6 +46,7 @@ def convert_to_dumps(data, encode=False):
         res = "P"
         if years != 0:
             res += f'{years}Y'
+            
         if months != 0:
             res += f'{months}M'
             
@@ -55,7 +56,7 @@ def convert_to_dumps(data, encode=False):
         if  (seconds != 0) or (minutes != 0) or (seconds != 0):
             res += 'T'
             if hours != 0:
-                res += f'{hours}Y'
+                res += f'{hours}H'
                 
             if minutes != 0:
                 res += f'{minutes}M'
@@ -63,6 +64,9 @@ def convert_to_dumps(data, encode=False):
             if seconds != 0:
                 res += f'{seconds}S'
                 
+        if res == 'P':
+            res = 'PT0S'
+
         return res
     elif isinstance(data_copy, uuid.UUID):
         return str(data_copy)
