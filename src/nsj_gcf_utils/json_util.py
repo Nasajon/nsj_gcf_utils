@@ -8,6 +8,8 @@ import re
 import uuid
 import base64
 
+from dateutil.relativedelta import relativedelta
+
 # JSON DUMPS
 
 
@@ -33,6 +35,39 @@ def convert_to_dumps(data, encode=False):
             return data_copy.strftime('%04Y-%m-%d')
     elif isinstance(data_copy, datetime.time):
         return data_copy.strftime('%H:%M:%S')
+    elif isinstance(data_copy, relativedelta):
+        years = int(data_copy.years)
+        months = int(data_copy.months)
+        days = int(data_copy.days)
+        hours = int(data_copy.hours)
+        minutes = int(data_copy.minutes)
+        seconds = int(data_copy.seconds)
+        
+        res = "P"
+        if years != 0:
+            res += f'{years}Y'
+            
+        if months != 0:
+            res += f'{months}M'
+            
+        if days != 0:
+            res += f'{days}D'
+            
+        if  (seconds != 0) or (minutes != 0) or (seconds != 0):
+            res += 'T'
+            if hours != 0:
+                res += f'{hours}H'
+                
+            if minutes != 0:
+                res += f'{minutes}M'
+                
+            if seconds != 0:
+                res += f'{seconds}S'
+                
+        if res == 'P':
+            res = 'PT0S'
+
+        return res
     elif isinstance(data_copy, uuid.UUID):
         return str(data_copy)
     elif isinstance(data_copy, decimal.Decimal):
