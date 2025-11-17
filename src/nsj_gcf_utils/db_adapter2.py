@@ -1,6 +1,10 @@
 import uuid
 
 from sqlparams import SQLParams
+from typing import List, Tuple
+
+from nsj_gcf_utils.log_time import log_time_context
+from nsj_gcf_utils.sql_utils import SQLUtils
 
 
 class DBAdapter2:
@@ -26,7 +30,7 @@ class DBAdapter2:
     def in_transaction(self):
         return self._transaction is not None
 
-    def execute(self, sql: str, **kwargs) -> int:
+    def execute(self, sql: str, **kwargs) -> Tuple[int, list | None]:
         """
         Executando uma instrução sql, com ou sem retorno.
         É obrigatório a passagem de uma conexão de banco no argumento self._db.
@@ -39,7 +43,7 @@ class DBAdapter2:
         try:
             cur = self._execute(sql, **kwargs)
 
-            if 'returning' in sql.lower():
+            if "returning" in sql.lower():
                 rs = cur.fetchall()
                 returning = [dict(rec.items()) for rec in rs]
             else:
@@ -69,11 +73,12 @@ class DBAdapter2:
                 model = model_class()
 
                 i = 0
-                for column in cur.keys():
-                    if (hasattr(model, column)):
-                        setattr(model, column, rec[i])
+                with log_time_context(f"Populando objeto de Modelo {model_class}"):
+                    for column in cur.keys():
+                        if hasattr(model, column):
+                            setattr(model, column, rec[i])
 
-                    i += 1
+                        i += 1
 
                 result.append(model)
 
@@ -122,7 +127,9 @@ class DBAdapter2:
             if cur is not None:
                 cur.close()
 
-    def execute_query_first_result_to_model(self, sql: str, model_class: object, **kwargs) -> "model_class":
+    def execute_query_first_result_to_model(
+        self, sql: str, model_class: object, **kwargs
+    ) -> "model_class":
         """
         Executando uma instrução sql com retorno.
         O retorno é feito em forma de um objeto do tipo passado pelo parâmetro "model_class".
@@ -136,12 +143,12 @@ class DBAdapter2:
             cur = self._execute(sql, **kwargs)
             rs = cur.fetchone()
 
-            if (len(rs) > 0):
+            if len(rs) > 0:
                 model = model_class()
 
                 i = 0
                 for column in cur.keys():
-                    if (hasattr(model, column)):
+                    if hasattr(model, column):
                         setattr(model, column, rs[i])
 
                     i += 1
@@ -169,7 +176,7 @@ class DBAdapter2:
                 cur.close()
 
     def _check_type(self, parameter):
-        if (isinstance(parameter, uuid.UUID)):
+        if isinstance(parameter, uuid.UUID):
             return str(parameter)
         else:
             return parameter
@@ -182,9 +189,9 @@ class DBAdapter2:
             if new_transaction:
                 self.begin()
 
-            if (kwargs is not None):
+            if kwargs is not None:
                 pars = {key: self._check_type(kwargs[key]) for key in kwargs}
-                sql2, pars2 = SQLParams('named', 'format').format(sql, pars)
+                sql2, pars2 = SQLParams("named", "format").format(sql, pars)
                 return self._db.execute(sql2, pars2)
             else:
                 return self._db.execute(sql)
@@ -198,6 +205,97 @@ class DBAdapter2:
                 self.commit()
 
     def execute_query_from_file(self, query_file_path, **kwargs):
-        with open(query_file_path, 'r') as f:
+        with open(query_file_path, "r") as f:
             sql = f.read()
         return self.execute_query(sql, **kwargs)
+
+    def execute_batch(self, sql: str, **kwargs) -> Tuple[int, List[dict]]:
+        """
+        Executa instruções SQL que contenham mais de um statement.
+        Retorna uma tupla contendo:
+        - número de linhas retornadas pelo último statement
+        - lista de dicionários com os dados retornados pelo último statement
+        """
+        new_transaction = not self.in_transaction()
+        cursor = None
+
+        try:
+            if new_transaction:
+                self.begin()
+
+            sql_to_run = (
+                SQLUtils.binding_args(sql, kwargs) if kwargs is not None else sql
+            )
+
+            raw_connection = self._unwrap_db_connection()
+
+            if hasattr(raw_connection, "execute_simple"):
+                context = raw_connection.execute_simple(sql_to_run)
+                rows = self._context_rows_to_dict(context)
+                return len(rows), rows
+
+            cursor = raw_connection.cursor()
+            cursor.execute(sql_to_run)
+            rows = self._cursor_rows_to_dict(cursor)
+            return len(rows), rows
+
+        except:
+            if new_transaction:
+                self.rollback()
+            raise
+        finally:
+            if cursor is not None:
+                cursor.close()
+            if new_transaction:
+                self.commit()
+
+    def _unwrap_db_connection(self):
+        """
+        Obtém a conexão DBAPI real, independentemente de estar encapsulada
+        por SQLAlchemy ou não.
+        """
+        connection = self._db
+        visited = set()
+
+        while True:
+            candidate = None
+
+            for attr in ("driver_connection", "connection", "dbapi_connection"):
+                if hasattr(connection, attr):
+                    attr_value = getattr(connection, attr)
+                    if attr_value is not None and attr_value is not connection:
+                        candidate = attr_value
+                        break
+
+            if candidate is None or id(candidate) in visited:
+                return connection
+
+            visited.add(id(candidate))
+            connection = candidate
+
+    @staticmethod
+    def _context_rows_to_dict(context) -> List[dict]:
+        rows = getattr(context, "rows", None)
+        columns = getattr(context, "columns", None)
+
+        if not rows or not columns:
+            return []
+
+        column_names = [column.get("name") for column in columns]
+        return [
+            {column_names[idx]: row[idx] for idx in range(len(column_names))}
+            for row in rows
+        ]
+
+    @staticmethod
+    def _cursor_rows_to_dict(cursor) -> List[dict]:
+        description = getattr(cursor, "description", None)
+        if not description:
+            return []
+
+        column_names = [col[0] for col in description]
+        result_rows = cursor.fetchall()
+        return [
+            {column_names[idx]: row[idx] for idx in range(len(column_names))}
+            for row in result_rows
+        ]
